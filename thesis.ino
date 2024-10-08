@@ -1,5 +1,4 @@
 #include "esp_camera.h"
-#include "Arduino.h"
 #include "Base64.h"
 
 #define PWDN_GPIO_NUM     32
@@ -63,9 +62,8 @@ void loop() {
   }
   String imageBase64 = base64::encode(fb->buf, fb->len);
 
-  Serial.print(imageBase64);
+  Serial.println(imageBase64);
 
   esp_camera_fb_return(fb);
 
-  break;
 }
