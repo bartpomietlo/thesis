@@ -1,0 +1,45 @@
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import spectrogram
+
+def read_data(filename):
+    data = []
+    with open(filename) as file:
+        for line in file:
+            if line.strip() and 'None' not in line:
+                parts = line.split('[')
+                if len(parts) > 1:
+                    numbers = parts[1].strip('] \n').split()
+                    complex_numbers = []
+                    for num in numbers:
+                        try:
+                            complex_numbers.append(complex(num))
+                        except ValueError:
+                            print(f"Format problem: {num}")
+                    data.append(complex_numbers)
+    return data
+
+
+data_folder = 'data'
+saved_folder = 'saved'
+
+os.makedirs(saved_folder, exist_ok=True)
+
+for filename in os.listdir(data_folder):
+    if filename.endswith(".txt"):
+        filepath = os.path.join(data_folder, filename)
+        data_list = read_data(filepath)
+        if data_list:
+            data_flat = np.concatenate([np.array(x) for x in data_list])
+            frequencies, times, Sxx = spectrogram(data_flat.real)
+            plt.figure(figsize=(10, 6))
+            plt.pcolormesh(times, frequencies, 10 * np.log10(Sxx), shading='gouraud')
+            plt.ylabel('Frequency [Hz]')
+            plt.xlabel('Time [us]')
+            plt.title(filename.replace('.txt', ''))
+            plt.colorbar(label='Intensivity [dB]')
+            save_path = os.path.join(saved_folder, f"{filename.replace('.txt', '.png')}")
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            print(f"Saved {filename} in {save_path}")
